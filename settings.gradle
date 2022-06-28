@@ -1,0 +1,41 @@
+rootProject.name = "GroovyTest"
+include ':app'
+
+/*
+初始化阶段：收集需要参加本次构建的所有子工程，创建项目的层次结构，并且为每一个项目创建一个 Project 实例。此阶段主要执行settings.gradle 脚本。
+配置阶段：执行各个目录下build.gradle 脚本，完成Project对象的配置，并且根据项目自身的配置，构造出一个有向无环的任务依赖关系图，以便在下一个阶段执行。
+执行阶段：负责将上一步生成的任务依赖图，依次执行。
+*/
+println("[life-cycle] 我是settings.gradle")
+//gradle 构建的生命周期监听
+gradle.addBuildListener(new BuildAdapter(){
+    @Override
+    void settingsEvaluated(Settings settings) {
+        super.settingsEvaluated(settings)
+        //settings.gradle 脚本代码执行完成后调用
+        println("[life-cycle] 初始化阶段完成")
+    }
+    @Override
+    void projectsEvaluated(Gradle gradle) {
+        super.projectsEvaluated(gradle)
+        //执行各目录下 build.gradle 脚本
+        println("[life-cycle] 配置阶段完成")
+
+        //可以获取所有子项目
+        gradle.rootProject.childProjects.each { name,p ->
+            println("[子工程] 名称是：${name},路径是 ${p.projectDir} ")
+        }
+    }
+    @Override
+    void buildFinished(BuildResult result) {
+        super.buildFinished(result)
+        println("[life-cycle] 构建结束")
+    }
+})
+
+//rootProject  初始化阶段 后皆可使用
+//project      配置阶段
+//task
+println("[life-cycle] 我的工程路径 ：${rootProject.projectDir}")
+
+

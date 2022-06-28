@@ -1,0 +1,151 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext.kotlin_version = "1.5.0"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.2.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        jcenter() // Warning: this repository is going to shut down soon
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+
+println("[life-cycle] 我是根目录的build.gradle")
+
+//运行代码：gradlew clean -q
+
+//Groovy 入门
+//单行注释
+/*
+ 多行注释
+*/
+
+//基本类型 ：byte,short,int,long,float,double,char
+int a = 10
+def b = 11
+println(" a = $a")
+println(" b = $b")
+
+//String
+String str = "Hello，World"
+String str2 = str.toUpperCase()
+println("str is $str2")
+
+//集合
+def array = [1,2,3,4]
+array.add(9)
+array.each {
+    if(it > 5){
+        println("it is $it")
+    }
+}
+println("array is $array")
+
+//map
+def map = ["name":"大熊","age":100]
+println("map is $map")
+println("name is ${map["name"]}")
+
+//流程控制
+//循环
+for (int i=0;i<10;i++){
+    if(i > 8){
+        println("i is $i")
+    }
+}
+
+//方法
+def hello(String name){
+    println("Hello,$name")
+}
+hello("大熊")
+
+
+//进阶语法
+
+//闭包:开放匿名的代码块，可接受参数，具有返回值，也可被分配给变量
+//定义规则：{ [params(参数s) ->] statements(表达式) }
+def c = { println("Hello Closure") }
+c()
+//def c2 = { it -> println("c2：it = $it") }
+//只有一个参数的时候，参数可以忽略，默认名称为 it
+def c2 = { println("c2：it = $it") }
+c2("小熊")
+//只有一个参数的时候，名称可以任意指定
+def c3 = { name -> println("c3：name = $name") }
+c3("baby")
+def c4 = { name1,name2 ->
+    println("c4：name1 = $name1 name2 = $name2")
+}
+c4("小狗","小猫")
+
+def list = [1,5,9]
+list.each {
+    println("it = $it")
+}
+
+
+//DSL:
+//自定义DSL如下：
+def myAndroid = {
+    compileSdkVersion 27
+    defaultConfig{
+        versionName "1.0"
+    }
+}
+//解析DSL
+Android an = new Android()
+//把闭包和对象关联起来
+myAndroid.delegate = an
+//闭包里的参数被赋值到a对象
+myAndroid.call()
+println("myAndroid = $an")
+
+//类: 和java 一致
+class DefaultConfig {
+    private String versionName
+    def versionName(String versionName){
+        this.versionName = versionName
+    }
+    @Override
+    String toString() {
+        return "DefaultConfig{ versionName = $versionName }"
+    }
+}
+class Android{
+    private int compileSdkVersion
+    private DefaultConfig defaultConfig
+    Android(){
+        this.defaultConfig = new DefaultConfig()
+    }
+    def compileSdkVersion(int compileSdkVersion){
+        this.compileSdkVersion = compileSdkVersion
+    }
+    def defaultConfig(Closure closure){
+        //把闭包和对象关联起来
+        closure.setDelegate(defaultConfig)
+        closure.call()
+    }
+    @Override
+    String toString() {
+        return "Android{ compileSdkVersion = $compileSdkVersion defaultConfig = $defaultConfig}"
+    }
+}
+

@@ -1,0 +1,166 @@
+groovy ， gradle生命周期 ， task  学习demo
+
+groovy：
+//基本类型 ：byte,short,int,long,float,double,char
+int a = 10
+def b = 11
+println(" a = $a")
+println(" b = $b")
+
+//String
+String str = "Hello，World"
+String str2 = str.toUpperCase()
+println("str is $str2")
+
+//集合
+def array = [1,2,3,4]
+array.add(9)
+array.each {
+    if(it > 5){
+        println("it is $it")
+    }
+}
+println("array is $array")
+
+//map
+def map = ["name":"大熊","age":100]
+println("map is $map")
+println("name is ${map["name"]}")
+
+//流程控制
+//循环
+for (int i=0;i<10;i++){
+    if(i > 8){
+        println("i is $i")
+    }
+}
+
+//方法
+def hello(String name){
+    println("Hello,$name")
+}
+hello("大熊")
+
+
+//进阶语法
+
+//闭包:开放匿名的代码块，可接受参数，具有返回值，也可被分配给变量
+//定义规则：{ [params(参数s) ->] statements(表达式) }
+def c = { println("Hello Closure") }
+c()
+//def c2 = { it -> println("c2：it = $it") }
+//只有一个参数的时候，参数可以忽略，默认名称为 it
+def c2 = { println("c2：it = $it") }
+c2("小熊")
+//只有一个参数的时候，名称可以任意指定
+def c3 = { name -> println("c3：name = $name") }
+c3("baby")
+def c4 = { name1,name2 ->
+    println("c4：name1 = $name1 name2 = $name2")
+}
+c4("小狗","小猫")
+
+def list = [1,5,9]
+list.each {
+    println("it = $it")
+}
+
+
+//DSL:
+//自定义DSL如下：
+def myAndroid = {
+    compileSdkVersion 27
+    defaultConfig{
+        versionName "1.0"
+    }
+}
+//解析DSL
+Android an = new Android()
+//把闭包和对象关联起来
+myAndroid.delegate = an
+//闭包里的参数被赋值到a对象
+myAndroid.call()
+println("myAndroid = $an")
+
+//类: 和java 一致
+class DefaultConfig {
+    private String versionName
+    def versionName(String versionName){
+        this.versionName = versionName
+    }
+    @Override
+    String toString() {
+        return "DefaultConfig{ versionName = $versionName }"
+    }
+}
+class Android{
+    private int compileSdkVersion
+    private DefaultConfig defaultConfig
+    Android(){
+        this.defaultConfig = new DefaultConfig()
+    }
+    def compileSdkVersion(int compileSdkVersion){
+        this.compileSdkVersion = compileSdkVersion
+    }
+    def defaultConfig(Closure closure){
+        //把闭包和对象关联起来
+        closure.setDelegate(defaultConfig)
+        closure.call()
+    }
+    @Override
+    String toString() {
+        return "Android{ compileSdkVersion = $compileSdkVersion defaultConfig = $defaultConfig}"
+    }
+}
+
+
+
+gradle生命周期：
+/*
+初始化阶段：收集需要参加本次构建的所有子工程，创建项目的层次结构，并且为每一个项目创建一个 Project 实例。此阶段主要执行settings.gradle 脚本。
+配置阶段：执行各个目录下build.gradle 脚本，完成Project对象的配置，并且根据项目自身的配置，构造出一个有向无环的任务依赖关系图，以便在下一个阶段执行。
+执行阶段：负责将上一步生成的任务依赖图，依次执行。
+*/
+println("[life-cycle] 我是settings.gradle")
+//gradle 构建的生命周期监听
+gradle.addBuildListener(new BuildAdapter(){
+    @Override
+    void settingsEvaluated(Settings settings) {
+        super.settingsEvaluated(settings)
+        //settings.gradle 脚本代码执行完成后调用
+        println("[life-cycle] 初始化阶段完成")
+    }
+    @Override
+    void projectsEvaluated(Gradle gradle) {
+        super.projectsEvaluated(gradle)
+        //执行各目录下 build.gradle 脚本
+        println("[life-cycle] 配置阶段完成")
+
+        //可以获取所有子项目
+        gradle.rootProject.childProjects.each { name,p ->
+            println("[子工程] 名称是：${name},路径是 ${p.projectDir} ")
+        }
+    }
+    @Override
+    void buildFinished(BuildResult result) {
+        super.buildFinished(result)
+        println("[life-cycle] 构建结束")
+    }
+})
+
+task:
+//测试调用执行方法：gradlew :app:testTask -q
+//创建任务 task
+task testTask(){
+    doLast {
+        println("我是test任务")
+    }
+}
+println("[我是app子工程] 我是工程路径是${project.projectDir}")
+//任务的依赖
+task test2(){
+    dependsOn(testTask)
+    doLast {
+        println("我是test2任务")
+    }
+}

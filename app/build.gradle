@@ -45,8 +45,9 @@ dependencies {
 
 println("[life-cycle] 我是app的build.gradle")
 
-//创建任务 task
+
 //测试调用执行方法：gradlew :app:testTask -q
+//创建任务 task
 task testTask(){
     doLast {
         println("我是test任务")

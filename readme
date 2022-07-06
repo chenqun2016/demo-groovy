@@ -164,3 +164,31 @@ task test2(){
         println("我是test2任务")
     }
 }
+
+一些技巧和知识点:
+
+列出本次构建所有任务名称:
+在settings.gradle中执行如下代码：
+    gradle.taskGraph.beforeTask { task ->
+        println(“[all-task] “ + task.name)
+    }
+
+在某些特定Task前后执行特定构建逻辑
+以clean任务为例子：
+    project.clean.doFirst /* 此处换成doLast亦可 */ {
+        // 清理某些产物，如下为示例
+        File yourDir = new File(...)
+        if (yourDir.exists()) {
+            routerMappingDir.deleteDir()
+        }
+    }
+若是其他任务，则首先需要找到任务，一般通用的处理方式为：
+    project.tasks.findAll {
+        // 此处以 javac 任务为例，具体需根据任务名称修改匹配规则
+        task -> task.name.startsWith(‘compile’) && task.name.endsWith(‘JavaWithJavac’)
+    }.each {
+        task ->
+            task.doLast /* 此处换成doFirst 亦可 */ {
+                // 自定义构建逻辑
+            }
+    }
